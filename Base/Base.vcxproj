@@ -17,13 +17,15 @@
     <ClCompile Include="Source\Camera2.cpp" />
     <ClCompile Include="Source\Camera3.cpp" />
     <ClCompile Include="Source\GenerateSkyPlane.cpp" />
+    <ClCompile Include="Source\Init.cpp" />
+    <ClCompile Include="Source\LoadHmap.cpp" />
     <ClCompile Include="Source\LoadOBJ.cpp" />
     <ClCompile Include="Source\LoadTGA.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\MeshBuilder.cpp" />
     <ClCompile Include="Source\ObjectClass.cpp" />
-    <ClCompile Include="Source\SceneText.cpp" />
+    <ClCompile Include="Source\Render.cpp" />
     <ClCompile Include="Source\shader.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
   </ItemGroup>
@@ -36,6 +38,7 @@
     <ClInclude Include="Source\GenerateSkyPlane.h" />
     <ClInclude Include="Source\Geometry.h" />
     <ClInclude Include="Source\Light.h" />
+    <ClInclude Include="Source\LoadHmap.h" />
     <ClInclude Include="Source\LoadOBJ.h" />
     <ClInclude Include="Source\LoadTGA.h" />
     <ClInclude Include="Source\Material.h" />
@@ -43,7 +46,6 @@
     <ClInclude Include="Source\MeshBuilder.h" />
     <ClInclude Include="Source\ObjectClass.h" />
     <ClInclude Include="Source\Scene.h" />
-    <ClInclude Include="Source\SceneText.h" />
     <ClInclude Include="Source\shader.hpp" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\Vertex.h" />

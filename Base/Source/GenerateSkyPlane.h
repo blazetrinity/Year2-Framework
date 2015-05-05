@@ -7,6 +7,17 @@
 #include "Mesh.h"
 #include "MatrixStack.h"
 #include "Light.h"
+#include "GL\glew.h"
+#include "shader.hpp"
+#include "MeshBuilder.h"
+#include "Application.h"
+#include "Utility.h"
+#include "LoadTGA.h"
+#include "LoadHmap.h"
+#include <sstream>
+#include <vector>
+
+using std::vector;
 
 class GenerateSkyPlane : public Scene
 {
@@ -19,8 +30,7 @@ class GenerateSkyPlane : public Scene
 		U_MATERIAL_DIFFUSE,
 		U_MATERIAL_SPECULAR,
 		U_MATERIAL_SHININESS,
-		U_LIGHTENABLED,
-		U_NUMLIGHTS,
+
 		U_LIGHT0_TYPE,
 		U_LIGHT0_POSITION,
 		U_LIGHT0_COLOR,
@@ -32,6 +42,7 @@ class GenerateSkyPlane : public Scene
 		U_LIGHT0_COSCUTOFF,
 		U_LIGHT0_COSINNER,
 		U_LIGHT0_EXPONENT,
+
 		U_LIGHT1_TYPE,
 		U_LIGHT1_POSITION,
 		U_LIGHT1_COLOR,
@@ -43,6 +54,10 @@ class GenerateSkyPlane : public Scene
 		U_LIGHT1_COSCUTOFF,
 		U_LIGHT1_COSINNER,
 		U_LIGHT1_EXPONENT,
+
+		U_LIGHTENABLED,
+		U_NUMLIGHTS,
+
 		U_COLOR_TEXTURE_ENABLED,
 		U_COLOR_TEXTURE,
 		U_TEXT_ENABLED,
@@ -76,16 +91,23 @@ class GenerateSkyPlane : public Scene
 		GEO_OBJECT,
 		GEO_TEXT,
 		GEO_SKYPLANE,
+		GEO_TERRAIN,
+		GEO_POND,
 		NUM_GEOMETRY,
 	};
 public:
 	GenerateSkyPlane();
 	~GenerateSkyPlane();
 
+	float timer;
+
 	virtual void Init();
 	virtual void Update(double dt);
 	virtual void Render();
 	virtual void Exit();
+
+	void InitObjects();
+	void InitLights();
 
 	void RenderText(Mesh* mesh, std::string text, Color color);
 	void RenderTextOnScreen(Mesh* mesh, std::string text, Color color, float size, float x, float y);
@@ -93,6 +115,10 @@ public:
 	void RenderMesh(Mesh *mesh, bool enableLight);
 	void RenderSkybox();
 	void RenderSkyPlane();
+	void RenderTerrain();
+	void RenderLights();
+	void RenderEnvironment();
+	void RenderHUD();
 
 private:
 	unsigned m_vertexArrayID;
@@ -109,6 +135,12 @@ private:
 	MS projectionStack;
 
 	Light lights[2];
+
+	vector<unsigned char> m_heightMap;
+
+	Vector3 terrainSize;
+
+	int numLights;
 
 	bool bLightEnabled;
 

@@ -19,60 +19,53 @@ void Camera3::Init(const Vector3& pos, const Vector3& target, const Vector3& up)
 	right.y = 0;
 	right.Normalize();
 	this->up = defaultUp = right.Cross(view).Normalized();
+	stance = PLAYER_STANCE::STANCE_STAND;
 }
 
-void Camera3::Update(double dt)
+void Camera3::Update(double dt,std::vector<unsigned char> &heightMap, Vector3 terrainSize)
 {
 	static const float CAMERA_SPEED = 200.f;
 	if(Application::IsKeyPressed('A'))
 	{
-		Vector3 tempTarget,tempPosition;
-		tempTarget = target;
-		tempPosition = position;
 		Vector3 view = (target - position).Normalized();
 		Vector3 right = view.Cross(up);
 		right.y = 0;
 		right.Normalize();
 		position -= right * CAMERA_SPEED * (float)dt;
 		target -= right * CAMERA_SPEED * (float)dt;
-		target.y = tempTarget.y;
-		position.y = tempPosition.y;
+		float yDiff = target.y - position.y;
+		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		target.y = position.y + yDiff;
 	}
 	if(Application::IsKeyPressed('D'))
 	{
-		Vector3 tempTarget,tempPosition;
-		tempTarget = target;
-		tempPosition = position;
 		Vector3 view = (target - position).Normalized();
 		Vector3 right = view.Cross(up);
 		right.y = 0;
 		right.Normalize();
 		position += right * CAMERA_SPEED * (float)dt;
 		target += right * CAMERA_SPEED * (float)dt;
-		target.y = tempTarget.y;
-		position.y = tempPosition.y;
+		float yDiff = target.y - position.y;
+		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		target.y = position.y + yDiff;
 	}
 	if(Application::IsKeyPressed('W'))
 	{
-		Vector3 tempTarget,tempPosition;
-		tempTarget = target;
-		tempPosition = position;
 		Vector3 view = (target - position).Normalized();
 		position += view * CAMERA_SPEED * (float)dt;
 		target += view * CAMERA_SPEED * (float)dt;
-		target.y = tempTarget.y;
-		position.y = tempPosition.y;
+		float yDiff = target.y - position.y;
+		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		target.y = position.y + yDiff;
 	}
 	if(Application::IsKeyPressed('S'))
 	{
-		Vector3 tempTarget,tempPosition;
-		tempTarget = target;
-		tempPosition = position;
 		Vector3 view = (target - position).Normalized();
 		position -= view * CAMERA_SPEED * (float)dt;
 		target -= view * CAMERA_SPEED * (float)dt;
-		target.y = tempTarget.y;
-		position.y = tempPosition.y;
+		float yDiff = target.y - position.y;
+		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		target.y = position.y + yDiff;
 	}
 	if(Application::IsKeyPressed(VK_LEFT))
 	{
@@ -158,6 +151,45 @@ void Camera3::Update(double dt)
 	if(Application::IsKeyPressed('R'))
 	{
 		Reset();
+	}
+}
+
+void Camera3::ChangeStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize)
+{
+	if(stance == PLAYER_STANCE::STANCE_STAND)
+	{
+		stance = PLAYER_STANCE::STANCE_CROUCH;
+		Vector3 view = (target - position).Normalized();
+		Vector3 right = view.Cross(up);
+		right.y = 0;
+		right.Normalize();
+		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		up = right.Cross(view).Normalized();
+		target = position + view;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_CROUCH)
+	{
+		stance = PLAYER_STANCE::STANCE_PRONE;
+		Vector3 view = (target - position).Normalized();
+		Vector3 right = view.Cross(up);
+		right.y = 0;
+		right.Normalize();
+		position.y = 7 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		up = right.Cross(view).Normalized();
+		target = position + view;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_PRONE)
+	{
+		stance = PLAYER_STANCE::STANCE_STAND;
+		Vector3 view = (target - position).Normalized();
+		Vector3 right = view.Cross(up);
+		right.y = 0;
+		right.Normalize();
+		position.y = 5 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		up = right.Cross(view).Normalized();
+		target = position + view;
 	}
 }
 

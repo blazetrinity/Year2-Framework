@@ -30,6 +30,9 @@ private:
 
 	//Declare a window object
 	StopWatch m_timer;
+	double m_dElapsedTime;
+	double m_dAccumulatedTime_ThreadOne;
+	double m_dAccumulatedTime_ThreadTwo;
 };
 
 #endif

@@ -134,6 +134,14 @@ void Application::Init()
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 		//return -1;
 	}
+
+	//Hide the cursor
+	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+	//Set these 2 variables to zero
+	m_dElapsedTime = 0.0;
+	m_dAccumulatedTime_ThreadOne = 0.0;
+	m_dAccumulatedTime_ThreadTwo = 0.0;
 }
 
 void Application::Run()
@@ -145,8 +153,24 @@ void Application::Run()
 	m_timer.startTimer();    // Start timer to calculate how long it takes to render this frame
 	while (!glfwWindowShouldClose(m_window) && !IsKeyPressed(VK_ESCAPE))
 	{
-		GetMouseUpdate();
-		scene->Update(m_timer.getElapsedTime());
+		//Get the elapsed time
+		m_dElapsedTime = m_timer.getElapsedTime();
+		m_dAccumulatedTime_ThreadOne += m_dElapsedTime;
+		m_dAccumulatedTime_ThreadTwo += m_dElapsedTime;
+
+		if(m_dAccumulatedTime_ThreadOne > (float)(1/60))
+		{
+			GetMouseUpdate();
+			scene->Update(m_dElapsedTime);
+			m_dAccumulatedTime_ThreadOne = 0.0;
+		}
+
+		if(m_dAccumulatedTime_ThreadTwo > (float)(1/60))
+		{
+			//UpdateAI()
+			m_dAccumulatedTime_ThreadTwo = 0.0;
+		}
+
 		scene->Render();
 		//Swap buffers
 		glfwSwapBuffers(m_window);
