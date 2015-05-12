@@ -10,6 +10,8 @@ Camera3::~Camera3()
 {
 }
 
+static const float CAMERA_SPEED = 200.f;
+
 void Camera3::Init(const Vector3& pos, const Vector3& target, const Vector3& up)
 {
 	this->position = defaultPosition = pos;
@@ -20,52 +22,34 @@ void Camera3::Init(const Vector3& pos, const Vector3& target, const Vector3& up)
 	right.Normalize();
 	this->up = defaultUp = right.Cross(view).Normalized();
 	stance = PLAYER_STANCE::STANCE_STAND;
+
+	for(int i = 0; i < 255; ++i)
+	{
+		myKeys[i] = false;
+	}
 }
 
 void Camera3::Update(double dt,std::vector<unsigned char> &heightMap, Vector3 terrainSize)
 {
-	static const float CAMERA_SPEED = 200.f;
-	if(Application::IsKeyPressed('A'))
+	if(myKeys['a'] == true)
 	{
-		Vector3 view = (target - position).Normalized();
-		Vector3 right = view.Cross(up);
-		right.y = 0;
-		right.Normalize();
-		position -= right * CAMERA_SPEED * (float)dt;
-		target -= right * CAMERA_SPEED * (float)dt;
-		float yDiff = target.y - position.y;
-		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
-		target.y = position.y + yDiff;
+		MoveLeft(dt,heightMap,terrainSize);
+		myKeys['a'] = false;
 	}
-	if(Application::IsKeyPressed('D'))
+	if(myKeys['d'] == true)
 	{
-		Vector3 view = (target - position).Normalized();
-		Vector3 right = view.Cross(up);
-		right.y = 0;
-		right.Normalize();
-		position += right * CAMERA_SPEED * (float)dt;
-		target += right * CAMERA_SPEED * (float)dt;
-		float yDiff = target.y - position.y;
-		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
-		target.y = position.y + yDiff;
+		MoveRight(dt,heightMap,terrainSize);
+		myKeys['d'] = false;
 	}
-	if(Application::IsKeyPressed('W'))
+	if(myKeys['w'] == true)
 	{
-		Vector3 view = (target - position).Normalized();
-		position += view * CAMERA_SPEED * (float)dt;
-		target += view * CAMERA_SPEED * (float)dt;
-		float yDiff = target.y - position.y;
-		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
-		target.y = position.y + yDiff;
+		MoveForward(dt,heightMap,terrainSize);
+		myKeys['w'] = false;
 	}
-	if(Application::IsKeyPressed('S'))
+	if(myKeys['s'] == true)
 	{
-		Vector3 view = (target - position).Normalized();
-		position -= view * CAMERA_SPEED * (float)dt;
-		target -= view * CAMERA_SPEED * (float)dt;
-		float yDiff = target.y - position.y;
-		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
-		target.y = position.y + yDiff;
+		MoveBackward(dt,heightMap,terrainSize);
+		myKeys['s'] = false;
 	}
 	if(Application::IsKeyPressed(VK_LEFT))
 	{
@@ -152,6 +136,57 @@ void Camera3::Update(double dt,std::vector<unsigned char> &heightMap, Vector3 te
 	{
 		Reset();
 	}
+}
+
+void Camera3::UpdateStatus(const unsigned char key)
+{
+	myKeys[key] = true;
+}
+
+void Camera3::MoveForward(const double dt, std::vector<unsigned char> &heightMap, Vector3 terrainSize)
+{
+	Vector3 view = (target - position).Normalized();
+	position += view * CAMERA_SPEED * (float)dt;
+	target += view * CAMERA_SPEED * (float)dt;
+	float yDiff = target.y - position.y;
+	position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+	target.y = position.y + yDiff;
+}
+	
+void Camera3::MoveBackward(const double dt, std::vector<unsigned char> &heightMap, Vector3 terrainSize)
+{
+	Vector3 view = (target - position).Normalized();
+	position -= view * CAMERA_SPEED * (float)dt;
+	target -= view * CAMERA_SPEED * (float)dt;
+	float yDiff = target.y - position.y;
+	position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+	target.y = position.y + yDiff;
+}	
+
+void Camera3::MoveLeft(const double dt, std::vector<unsigned char> &heightMap, Vector3 terrainSize)
+{
+	Vector3 view = (target - position).Normalized();
+	Vector3 right = view.Cross(up);
+	right.y = 0;
+	right.Normalize();
+	position -= right * CAMERA_SPEED * (float)dt;
+	target -= right * CAMERA_SPEED * (float)dt;
+	float yDiff = target.y - position.y;
+	position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+	target.y = position.y + yDiff;
+}
+
+void Camera3::MoveRight(const double dt, std::vector<unsigned char> &heightMap, Vector3 terrainSize)
+{
+	Vector3 view = (target - position).Normalized();
+	Vector3 right = view.Cross(up);
+	right.y = 0;
+	right.Normalize();
+	position += right * CAMERA_SPEED * (float)dt;
+	target += right * CAMERA_SPEED * (float)dt;
+	float yDiff = target.y - position.y;
+	position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+	target.y = position.y + yDiff;
 }
 
 void Camera3::ChangeStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize)

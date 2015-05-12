@@ -3,6 +3,8 @@
 #define APPLICATION_H
 
 #include "timer.h"
+#include "SceneText.h"
+#include "GenerateSkyPlane.h"
 
 class Application
 {
@@ -18,7 +20,8 @@ public:
 	static bool IsKeyPressed(unsigned short key);
 	static double mouse_last_x, mouse_last_y, mouse_current_x, mouse_current_y, mouse_diff_x, mouse_diff_y;
 	static double camera_yaw, camera_pitch;
-	static bool GetMouseUpdate();
+	bool GetMouseUpdate();
+	bool GetKeyboardUpdate();
 
 private:
 	Application();
@@ -33,6 +36,9 @@ private:
 	double m_dElapsedTime;
 	double m_dAccumulatedTime_ThreadOne;
 	double m_dAccumulatedTime_ThreadTwo;
+	
+	//The handler for the scene
+	Scene *scene;
 };
 
 #endif

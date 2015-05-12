@@ -14,6 +14,7 @@
 #include "Utility.h"
 #include "LoadTGA.h"
 #include "LoadHmap.h"
+#include "BulletInfo.h"
 #include <sstream>
 #include <vector>
 
@@ -21,6 +22,33 @@ using std::vector;
 
 class GenerateSkyPlane : public Scene
 {
+public:
+	GenerateSkyPlane();
+	~GenerateSkyPlane();
+
+	float timer;
+
+	virtual void Init();
+	virtual void Update(double dt);
+	virtual void Render();
+	virtual void UpdateCameraStatus(const unsigned char key);
+	virtual void UpdateWeaponStatus(const unsigned char key);
+	virtual void Exit();
+
+	void InitObjects();
+	void InitLights();
+
+	void RenderText(Mesh* mesh, std::string text, Color color);
+	void RenderTextOnScreen(Mesh* mesh, std::string text, Color color, float size, float x, float y);
+	void RenderMeshIn2D(Mesh* mesh, bool enableLight, float size = 1.0f, float x = 0.0f, float y = 0.0f);
+	void RenderMesh(Mesh *mesh, bool enableLight);
+	void RenderSkybox();
+	void RenderSkyPlane();
+	void RenderTerrain();
+	void RenderLights();
+	void RenderEnvironment();
+	void RenderHUD();
+
 	enum UNIFORM_TYPE
 	{
 		U_MVP = 0,
@@ -95,30 +123,15 @@ class GenerateSkyPlane : public Scene
 		GEO_POND,
 		NUM_GEOMETRY,
 	};
-public:
-	GenerateSkyPlane();
-	~GenerateSkyPlane();
 
-	float timer;
-
-	virtual void Init();
-	virtual void Update(double dt);
-	virtual void Render();
-	virtual void Exit();
-
-	void InitObjects();
-	void InitLights();
-
-	void RenderText(Mesh* mesh, std::string text, Color color);
-	void RenderTextOnScreen(Mesh* mesh, std::string text, Color color, float size, float x, float y);
-	void RenderMeshIn2D(Mesh* mesh, bool enableLight, float size = 1.0f, float x = 0.0f, float y = 0.0f);
-	void RenderMesh(Mesh *mesh, bool enableLight);
-	void RenderSkybox();
-	void RenderSkyPlane();
-	void RenderTerrain();
-	void RenderLights();
-	void RenderEnvironment();
-	void RenderHUD();
+	enum WEAPON_ACTION
+	{
+		WA_NIL = 0,
+		WA_FIRE,
+		WA_RELOAD,
+		WA_CHANGEWEAPON,
+		WA_TOTAL,
+	};
 
 private:
 	unsigned m_vertexArrayID;
@@ -145,6 +158,8 @@ private:
 	bool bLightEnabled;
 
 	float fps;
+
+	vector<CBulletInfo*> bulletList;
 };
 
 #endif

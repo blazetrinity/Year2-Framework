@@ -32,8 +32,10 @@ private:
 
 public:
 	CObjectClass();
-	CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, Vector3 MinBound, Vector3 MaxBound, int ID); 
+	CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, int size, int ID); 
 	~CObjectClass();
+
+	void Init(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, int size, int ID);
 
 	Mtx44 getRotate(void);
 	
@@ -47,7 +49,7 @@ public:
 	void setRotate(Mtx44 R);
 	void setTranslate(Vector3 T);
 	void setScale(Vector3 S);
-	void setBound(Vector3 Min, Vector3 Max);
+	void setBound(int size);
 	void setID(int ID);
 	
 };

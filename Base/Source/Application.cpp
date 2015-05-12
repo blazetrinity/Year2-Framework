@@ -11,9 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "SceneText.h"
-#include "GenerateSkyPlane.h"
-
 GLFWwindow* m_window;
 const unsigned char FPS = 60; // FPS of this game
 const unsigned int frameTime = 1000 / FPS; // time for each frame
@@ -53,38 +50,6 @@ Application::Application()
 
 Application::~Application()
 {
-}
-
-bool Application::GetMouseUpdate()
-{
-	glfwGetCursorPos(m_window, &mouse_current_x, &mouse_current_y);
-
-	//Calculate the difference in positions
-	mouse_diff_x = mouse_current_x - mouse_last_x;
-	mouse_diff_y = mouse_current_y - mouse_last_y;
-
-	//Calculate the yaw and pitch
-	camera_yaw = (float) mouse_diff_x * 0.0174555555555556f; //*3.142f / 180.0f;
-	camera_pitch = mouse_diff_y * 0.0174555555555556f;// 3.142f / 180.0f );
-
-	//Do a wraparound if the mouse cursor has gone out of the deadzone
-	if((mouse_current_x < m_window_deadzone) || (mouse_current_x > m_window_width - m_window_deadzone))
-	{
-		mouse_current_x = m_window_width >> 1;
-		glfwSetCursorPos(m_window, mouse_current_x, mouse_current_y);
-	}
-
-	if((mouse_current_y < m_window_deadzone) || (mouse_current_y > m_window_height - m_window_deadzone))
-	{
-		mouse_current_y = m_window_height >> 1;
-		glfwSetCursorPos(m_window,mouse_current_x, mouse_current_y);
-	}
-
-	//Store the current position as the last position
-	mouse_last_x = mouse_current_x;
-	mouse_last_y = mouse_current_y;
-
-	return false;
 }
 
 void Application::Init()
@@ -147,9 +112,9 @@ void Application::Init()
 void Application::Run()
 {
 	//Main Loop
-	Scene *scene = new GenerateSkyPlane();
+	scene = new GenerateSkyPlane();
 	scene->Init();
-
+	
 	m_timer.startTimer();    // Start timer to calculate how long it takes to render this frame
 	while (!glfwWindowShouldClose(m_window) && !IsKeyPressed(VK_ESCAPE))
 	{
@@ -161,6 +126,7 @@ void Application::Run()
 		if(m_dAccumulatedTime_ThreadOne > (float)(1/60))
 		{
 			GetMouseUpdate();
+			GetKeyboardUpdate();
 			scene->Update(m_dElapsedTime);
 			m_dAccumulatedTime_ThreadOne = 0.0;
 		}
@@ -181,6 +147,64 @@ void Application::Run()
 	} //Check if the ESC key had been pressed or if the window had been closed
 	scene->Exit();
 	delete scene;
+}
+
+bool Application::GetKeyboardUpdate()
+{
+	if(IsKeyPressed('A'))
+	{
+		scene->UpdateCameraStatus('a');
+	}
+	if(IsKeyPressed('D'))
+	{
+		scene->UpdateCameraStatus('d');
+	}
+	if(IsKeyPressed('W'))
+	{
+		scene->UpdateCameraStatus('w');
+	}
+	if(IsKeyPressed('S'))
+	{
+		scene->UpdateCameraStatus('s');
+	}
+	return true;
+}
+
+bool Application::GetMouseUpdate()
+{
+	glfwGetCursorPos(m_window, &mouse_current_x, &mouse_current_y);
+
+	//Calculate the difference in positions
+	mouse_diff_x = mouse_current_x - mouse_last_x;
+	mouse_diff_y = mouse_current_y - mouse_last_y;
+
+	//Calculate the yaw and pitch
+	camera_yaw = (float) mouse_diff_x * 0.0174555555555556f; //*3.142f / 180.0f;
+	camera_pitch = mouse_diff_y * 0.0174555555555556f;// 3.142f / 180.0f );
+
+	//Do a wraparound if the mouse cursor has gone out of the deadzone
+	if((mouse_current_x < m_window_deadzone) || (mouse_current_x > m_window_width - m_window_deadzone))
+	{
+		mouse_current_x = m_window_width >> 1;
+		glfwSetCursorPos(m_window, mouse_current_x, mouse_current_y);
+	}
+
+	if((mouse_current_y < m_window_deadzone) || (mouse_current_y > m_window_height - m_window_deadzone))
+	{
+		mouse_current_y = m_window_height >> 1;
+		glfwSetCursorPos(m_window,mouse_current_x, mouse_current_y);
+	}
+
+	//Store the current position as the last position
+	mouse_last_x = mouse_current_x;
+	mouse_last_y = mouse_current_y;
+
+	if(glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	{
+		scene->UpdateWeaponStatus(GenerateSkyPlane::WA_FIRE);
+	}
+
+	return false;
 }
 
 void Application::Exit()

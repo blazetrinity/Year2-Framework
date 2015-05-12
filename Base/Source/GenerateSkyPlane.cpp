@@ -36,6 +36,12 @@ void GenerateSkyPlane::Init()
 
 	camera.Init(Vector3(0, 10 + terrainSize.y * ReadHeightMap(m_heightMap, 0/terrainSize.x, 10/terrainSize.z), 10), Vector3(0, 10 + terrainSize.y * ReadHeightMap(m_heightMap, 0/terrainSize.x, 10/terrainSize.z), 0), Vector3(0, 1, 0));
 
+	for(int i = 0; i < 10; ++i)
+	{
+		CBulletInfo *b = new CBulletInfo;
+		bulletList.push_back(b);
+	}
+
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 1000 units
 	Mtx44 perspective;
 	perspective.SetToPerspective(45.0f, 4.0f / 3.0f, 0.1f, 10000.0f);
@@ -48,6 +54,27 @@ void GenerateSkyPlane::Init()
 
 	bLightEnabled = true;
 }
+
+void GenerateSkyPlane::UpdateCameraStatus(const unsigned char key)
+{
+	camera.UpdateStatus(key);
+}
+
+void GenerateSkyPlane::UpdateWeaponStatus(const unsigned char key)
+{
+	if(key == WA_FIRE)
+	{
+		for(int i = 0; i < bulletList.size(); ++i)
+		{
+			if(bulletList[i]->GetStatus() == false)
+			{
+				bulletList[i]->Init(camera.position,(camera.target - camera.position).Normalized(),Vector3(1,1,1),Mtx44(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),1,1,100.f,5.f);
+				break;
+			}
+		}
+	}
+}
+
 
 void GenerateSkyPlane::Update(double dt)
 {
@@ -106,6 +133,11 @@ void GenerateSkyPlane::Update(double dt)
 		lights[0].position.y += (float)(10.f * dt);
 
 	rotateAngle += (float)(10 * dt);
+
+	for(int i = 0; i < bulletList.size(); ++i)
+	{
+		bulletList[i]->Update(dt);
+	}
 
 	camera.Update(dt,m_heightMap,terrainSize);
 
@@ -282,6 +314,19 @@ void GenerateSkyPlane::Render()
 					);
 	// Model matrix : an identity matrix (model will be at the origin)
 	modelStack.LoadIdentity();
+
+	for(int i = 0; i < bulletList.size(); ++i)
+	{
+		if(bulletList[i]->GetStatus() == true)
+		{
+			modelStack.PushMatrix();
+			modelStack.Translate(bulletList[i]->getTranslate().x,bulletList[i]->getTranslate().y,bulletList[i]->getTranslate().z);
+			//modelStack.Rotate(-90,1,0,0);
+			modelStack.Scale(bulletList[i]->getScale().x,bulletList[i]->getScale().y,bulletList[i]->getScale().z);
+			RenderMesh(meshList[GEO_LIGHTBALL], false);
+			modelStack.PopMatrix();
+		}
+	}
 
 	RenderLights();
 	
