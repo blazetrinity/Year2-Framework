@@ -9,12 +9,12 @@ void GenerateSkyPlane::InitObjects()
 	meshList[GEO_AXES] = MeshBuilder::GenerateAxes("reference", 1000, 1000, 1000);
 	meshList[GEO_CROSSHAIR] = MeshBuilder::GenerateCrossHair("Crosshair",Color(1,1,1),5);
 	meshList[GEO_QUAD] = MeshBuilder::GenerateQuad("quad", Color(1, 1, 1), 1.f);
-	meshList[GEO_QUAD]->textureID = LoadTGA("Image//calibri.tga");
+	meshList[GEO_QUAD]->textureID[0] = LoadTGA("Image//calibri.tga");
 	meshList[GEO_TEXT] = MeshBuilder::GenerateText("text", 16, 16);
-	meshList[GEO_TEXT]->textureID = LoadTGA("Image//calibri.tga");
+	meshList[GEO_TEXT]->textureID[0] = LoadTGA("Image//calibri.tga");
 	meshList[GEO_TEXT]->material.kAmbient.Set(1, 0, 0);
 	meshList[GEO_OBJECT] = MeshBuilder::GenerateOBJ("OBJ1", "OBJ//chair.obj");//MeshBuilder::GenerateCube("cube", 1);
-	meshList[GEO_OBJECT]->textureID = LoadTGA("Image//chair.tga");
+	meshList[GEO_OBJECT]->textureID[0] = LoadTGA("Image//chair.tga");
 	meshList[GEO_RING] = MeshBuilder::GenerateRing("ring", Color(1, 0, 1), 36, 1, 0.5f);
 	meshList[GEO_LIGHTBALL] = MeshBuilder::GenerateSphere("lightball", Color(1, 1, 1), 18, 36, 1.f);
 	meshList[GEO_SPHERE] = MeshBuilder::GenerateSphere("sphere", Color(1, 0, 0), 18, 36, 10.f);
@@ -25,31 +25,32 @@ void GenerateSkyPlane::InitObjects()
 	meshList[GEO_CONE]->material.kSpecular.Set(0.f, 0.f, 0.f);
 	
 	meshList[GEO_LEFT] = MeshBuilder::GenerateQuad("LEFT", Color(1, 1, 1), 1.f);
-	meshList[GEO_LEFT]->textureID = LoadTGA("Image//left.tga");
+	meshList[GEO_LEFT]->textureID[0] = LoadTGA("Image//left.tga");
 	meshList[GEO_RIGHT] = MeshBuilder::GenerateQuad("RIGHT", Color(1, 1, 1), 1.f);
-	meshList[GEO_RIGHT]->textureID = LoadTGA("Image//right.tga");
+	meshList[GEO_RIGHT]->textureID[0] = LoadTGA("Image//right.tga");
 	meshList[GEO_TOP] = MeshBuilder::GenerateQuad("TOP", Color(1, 1, 1), 1.f);
-	meshList[GEO_TOP]->textureID = LoadTGA("Image//top.tga");
+	meshList[GEO_TOP]->textureID[0] = LoadTGA("Image//top.tga");
 	meshList[GEO_BOTTOM] = MeshBuilder::GenerateQuad("BOTTOM", Color(1, 1, 1), 1.f);
-	meshList[GEO_BOTTOM]->textureID = LoadTGA("Image//bottom.tga");
+	meshList[GEO_BOTTOM]->textureID[0] = LoadTGA("Image//bottom.tga");
 	meshList[GEO_FRONT] = MeshBuilder::GenerateQuad("FRONT", Color(1, 1, 1), 1.f);
-	meshList[GEO_FRONT]->textureID = LoadTGA("Image//front.tga");
+	meshList[GEO_FRONT]->textureID[0] = LoadTGA("Image//front.tga");
 	meshList[GEO_BACK] = MeshBuilder::GenerateQuad("BACK", Color(1, 1, 1), 1.f);
-	meshList[GEO_BACK]->textureID = LoadTGA("Image//back.tga");
+	meshList[GEO_BACK]->textureID[0] = LoadTGA("Image//back.tga");
 	
 	meshList[GEO_POND] = MeshBuilder::GenerateQuad("GEO_POND", Color(1, 1, 1), 1.f);
-	meshList[GEO_POND]->textureID = LoadTGA("Image//sea.tga");
+	meshList[GEO_POND]->textureID[0] = LoadTGA("Image//sea.tga");
 
 	meshList[GEO_SKYPLANE] = MeshBuilder::GenerateSkyPlane("GEO_SKYPLANE", Color(1,1,1), 128, 200.0f, 2000.0f, 1.0f, 1.0f);
-	meshList[GEO_SKYPLANE]->textureID = LoadTGA("Image//top.tga");
+	meshList[GEO_SKYPLANE]->textureID[0] = LoadTGA("Image//top.tga");
 
 	meshList[GEO_TERRAIN] = MeshBuilder::GenerateTerrain("GEO_TERRAIN", "Image//heightmap.raw", m_heightMap);
-	meshList[GEO_TERRAIN]->textureID = LoadTGA("Image//moss1.tga");
+	meshList[GEO_TERRAIN]->textureID[0] = LoadTGA("Image//moss1.tga");
+	meshList[GEO_TERRAIN]->textureID[1] = LoadTGA("Image//brick.tga");
 }
 
 void GenerateSkyPlane::InitLights()
 {
-	m_programID = LoadShaders( "Shader//comg.vertexshader", "Shader//comg.fragmentshader" );
+	m_programID = LoadShaders( "Shader//comg.vertexshader", "Shader//MultiTexture.fragmentshader" );
 	
 	// Get a handle for our uniform
 	m_parameters[U_MVP] = glGetUniformLocation(m_programID, "MVP");
@@ -86,8 +87,10 @@ void GenerateSkyPlane::InitLights()
 	m_parameters[U_LIGHT1_COSINNER] = glGetUniformLocation(m_programID, "lights[1].cosInner");
 	m_parameters[U_LIGHT1_EXPONENT] = glGetUniformLocation(m_programID, "lights[1].exponent");
 	// Get a handle for our "colorTexture" uniform
-	m_parameters[U_COLOR_TEXTURE_ENABLED] = glGetUniformLocation(m_programID, "colorTextureEnabled");
-	m_parameters[U_COLOR_TEXTURE] = glGetUniformLocation(m_programID, "colorTexture");
+	m_parameters[U_COLOR_TEXTURE_ENABLED0] = glGetUniformLocation(m_programID, "colorTextureEnabled[0]");
+	m_parameters[U_COLOR_TEXTURE0] = glGetUniformLocation(m_programID, "colorTexture[0]");
+	m_parameters[U_COLOR_TEXTURE_ENABLED1] = glGetUniformLocation(m_programID, "colorTextureEnabled[1]");
+	m_parameters[U_COLOR_TEXTURE1] = glGetUniformLocation(m_programID, "colorTexture[1]");
 	// Get a handle for our "textColor" uniform
 	m_parameters[U_TEXT_ENABLED] = glGetUniformLocation(m_programID, "textEnabled");
 	m_parameters[U_TEXT_COLOR] = glGetUniformLocation(m_programID, "textColor");
