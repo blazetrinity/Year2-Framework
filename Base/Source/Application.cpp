@@ -151,6 +151,8 @@ void Application::Run()
 
 bool Application::GetKeyboardUpdate()
 {
+	static bool bCButtonState = false;
+	static bool bShiftButtonState = false;
 	if(IsKeyPressed('A'))
 	{
 		scene->UpdateCameraStatus('a');
@@ -166,6 +168,29 @@ bool Application::GetKeyboardUpdate()
 	if(IsKeyPressed('S'))
 	{
 		scene->UpdateCameraStatus('s');
+	}
+	if(IsKeyPressed(32))
+	{
+		scene->UpdateCameraStatus(32);
+	}
+	if(IsKeyPressed('C') && !bCButtonState)
+	{
+		scene->UpdateCameraStatus('c');
+		bCButtonState = true;
+	}
+	if(!IsKeyPressed('C') && bCButtonState)
+	{
+		bCButtonState = false;
+	}
+	if(IsKeyPressed(VK_SHIFT) && !bShiftButtonState)
+	{
+		scene->UpdateCameraStatus('z');
+		bShiftButtonState = true;
+	}
+	if(!IsKeyPressed(VK_SHIFT) && bShiftButtonState)
+	{
+		scene->UpdateCameraStatus('x');
+		bShiftButtonState = false;
 	}
 	return true;
 }

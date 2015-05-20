@@ -30,11 +30,11 @@ void GenerateSkyPlane::Init()
 
 	InitLights();
 	
-	InitObjects();
-	
 	terrainSize.Set(4000,350,4000);
 
 	camera.Init(Vector3(0, 10 + terrainSize.y * ReadHeightMap(m_heightMap, 0/terrainSize.x, 10/terrainSize.z), 10), Vector3(0, 10 + terrainSize.y * ReadHeightMap(m_heightMap, 0/terrainSize.x, 10/terrainSize.z), 0), Vector3(0, 1, 0));
+
+	InitObjects();
 
 	for(int i = 0; i < 10; ++i)
 	{
@@ -49,8 +49,6 @@ void GenerateSkyPlane::Init()
 	projectionStack.LoadMatrix(perspective);
 	
 	rotateAngle = 0;
-
-	timer = 0;
 
 	bLightEnabled = true;
 }
@@ -68,7 +66,7 @@ void GenerateSkyPlane::UpdateWeaponStatus(const unsigned char key)
 		{
 			if(bulletList[i]->GetStatus() == false)
 			{
-				bulletList[i]->Init(camera.position,(camera.target - camera.position).Normalized(),Vector3(1,1,1),Mtx44(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),1,1,100.f,5.f);
+				bulletList[i]->Init(camera.position,(camera.target - camera.position).Normalized(),Vector3(1,1,1),Mtx44(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),1,CObjectClass::GEO_BULLET,100.f,5.f);
 				break;
 			}
 		}
@@ -111,14 +109,6 @@ void GenerateSkyPlane::Update(double dt)
 		bLightEnabled = false;
 	}
 
-	timer += (float)(25*dt);
-
-	if(Application::IsKeyPressed('C') && timer > 5)
-	{
-		camera.ChangeStance(m_heightMap,terrainSize);
-		timer = 0;
-	}
-
 	if(Application::IsKeyPressed('I'))
 		lights[0].position.z -= (float)(10.f * dt);
 	if(Application::IsKeyPressed('K'))
@@ -140,6 +130,13 @@ void GenerateSkyPlane::Update(double dt)
 	}
 
 	camera.Update(dt,m_heightMap,terrainSize);
+
+	SpriteAnimation *sa = dynamic_cast<SpriteAnimation*>(meshList[CObjectClass::GEO_SPRITE_ANIMATION]);
+
+	if(sa)
+	{
+		sa->Update(dt);
+	}
 
 	fps = (float)(1.f / dt);
 }
@@ -329,19 +326,6 @@ void GenerateSkyPlane::Render()
 	// Model matrix : an identity matrix (model will be at the origin)
 	modelStack.LoadIdentity();
 
-	for(int i = 0; i < bulletList.size(); ++i)
-	{
-		if(bulletList[i]->GetStatus() == true)
-		{
-			modelStack.PushMatrix();
-			modelStack.Translate(bulletList[i]->getTranslate().x,bulletList[i]->getTranslate().y,bulletList[i]->getTranslate().z);
-			//modelStack.Rotate(-90,1,0,0);
-			modelStack.Scale(bulletList[i]->getScale().x,bulletList[i]->getScale().y,bulletList[i]->getScale().z);
-			RenderMesh(meshList[GEO_LIGHTBALL], false);
-			modelStack.PopMatrix();
-		}
-	}
-
 	RenderLights();
 	
 	//RenderSkybox();
@@ -352,13 +336,17 @@ void GenerateSkyPlane::Render()
 
 	RenderEnvironment();
 
+	RenderBullet();
+
+	RenderObjects();
+
 	RenderHUD();
 }
 
 void GenerateSkyPlane::Exit()
 {
 	// Cleanup VBO
-	for(int i = 0; i < NUM_GEOMETRY; ++i)
+	for(int i = 0; i < CObjectClass::NUM_GEOMETRY; ++i)
 	{
 		if(meshList[i])
 			delete meshList[i];

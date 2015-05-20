@@ -32,10 +32,37 @@ private:
 
 public:
 	CObjectClass();
-	CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, int size, int ID); 
+	CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, float size, int ID); 
 	~CObjectClass();
 
-	void Init(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, int size, int ID);
+	enum GEOMETRY_TYPE
+	{
+		GEO_AXES,
+		GEO_CROSSHAIR,
+		GEO_LIGHTBALL,
+		GEO_QUAD,
+		GEO_TEXT,
+		GEO_SKYPLANE,
+		GEO_TERRAIN,
+		GEO_POND,
+		GEO_BULLET,
+		GEO_OIL_DRUM,
+		GEO_SPRITE_ANIMATION,
+		GEO_SHACK,
+		/*GEO_SPHERE,
+		GEO_CUBE,
+		GEO_RING,
+		GEO_CONE,
+		GEO_LEFT,
+		GEO_RIGHT,
+		GEO_TOP,
+		GEO_BOTTOM,
+		GEO_FRONT,
+		GEO_BACK,*/
+		NUM_GEOMETRY,
+	};
+
+	void Init(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, float size, int ID);
 
 	Mtx44 getRotate(void);
 	

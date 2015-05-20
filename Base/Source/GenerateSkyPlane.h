@@ -26,8 +26,6 @@ public:
 	GenerateSkyPlane();
 	~GenerateSkyPlane();
 
-	float timer;
-
 	virtual void Init();
 	virtual void Update(double dt);
 	virtual void Render();
@@ -48,6 +46,8 @@ public:
 	void RenderLights();
 	void RenderEnvironment();
 	void RenderHUD();
+	void RenderBullet();
+	void RenderObjects();
 
 	enum UNIFORM_TYPE
 	{
@@ -95,37 +95,6 @@ public:
 		U_TEXT_COLOR,
 		U_TOTAL,
 	};
-	enum GEOMETRY_TYPE
-	{
-		GEO_AXES,
-		GEO_CROSSHAIR,
-		GEO_LIGHTBALL,
-		GEO_SPHERE,
-		GEO_SPHERE2,
-		GEO_SPHERE3,
-		GEO_SPHERE4,
-		GEO_SPHERE5,
-		GEO_SPHERE6,
-		GEO_SPHERE7,
-		GEO_SPHERE8,
-		GEO_SPHERE9,
-		GEO_QUAD,
-		GEO_CUBE,
-		GEO_RING,
-		GEO_CONE,
-		GEO_LEFT,
-		GEO_RIGHT,
-		GEO_TOP,
-		GEO_BOTTOM,
-		GEO_FRONT,
-		GEO_BACK,
-		GEO_OBJECT,
-		GEO_TEXT,
-		GEO_SKYPLANE,
-		GEO_TERRAIN,
-		GEO_POND,
-		NUM_GEOMETRY,
-	};
 
 	enum WEAPON_ACTION
 	{
@@ -138,7 +107,7 @@ public:
 
 private:
 	unsigned m_vertexArrayID;
-	Mesh* meshList[NUM_GEOMETRY];
+	Mesh* meshList[CObjectClass::NUM_GEOMETRY];
 	unsigned m_programID;
 	unsigned m_parameters[U_TOTAL];
 
@@ -163,6 +132,10 @@ private:
 	float fps;
 
 	vector<CBulletInfo*> bulletList;
+	vector<CObjectClass*> objectList;
+	CObjectClass* newObject;
+	Vector3 newObjectPos, newObjectScale;
+	Mtx44 newObjectRot;
 };
 
 #endif

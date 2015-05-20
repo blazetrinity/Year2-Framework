@@ -28,6 +28,7 @@
     <ClCompile Include="Source\ObjectClass.cpp" />
     <ClCompile Include="Source\Render.cpp" />
     <ClCompile Include="Source\shader.cpp" />
+    <ClCompile Include="Source\SpriteAnimation.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +50,7 @@
     <ClInclude Include="Source\ObjectClass.h" />
     <ClInclude Include="Source\Scene.h" />
     <ClInclude Include="Source\shader.hpp" />
+    <ClInclude Include="Source\SpriteAnimation.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\Vertex.h" />
   </ItemGroup>

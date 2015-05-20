@@ -2,29 +2,65 @@
 
 void GenerateSkyPlane::InitObjects()
 {
-	for(int i = 0; i < NUM_GEOMETRY; ++i)
+	for(int i = 0; i < CObjectClass::NUM_GEOMETRY; ++i)
 	{
 		meshList[i] = NULL;
 	}
-	meshList[GEO_AXES] = MeshBuilder::GenerateAxes("reference", 1000, 1000, 1000);
-	meshList[GEO_CROSSHAIR] = MeshBuilder::GenerateCrossHair("Crosshair",Color(1,1,1),5);
-	meshList[GEO_QUAD] = MeshBuilder::GenerateQuad("quad", Color(1, 1, 1), 1.f);
-	meshList[GEO_QUAD]->textureID[0] = LoadTGA("Image//calibri.tga");
-	meshList[GEO_TEXT] = MeshBuilder::GenerateText("text", 16, 16);
-	meshList[GEO_TEXT]->textureID[0] = LoadTGA("Image//calibri.tga");
-	meshList[GEO_TEXT]->material.kAmbient.Set(1, 0, 0);
-	meshList[GEO_OBJECT] = MeshBuilder::GenerateOBJ("OBJ1", "OBJ//chair.obj");//MeshBuilder::GenerateCube("cube", 1);
-	meshList[GEO_OBJECT]->textureID[0] = LoadTGA("Image//chair.tga");
-	meshList[GEO_RING] = MeshBuilder::GenerateRing("ring", Color(1, 0, 1), 36, 1, 0.5f);
-	meshList[GEO_LIGHTBALL] = MeshBuilder::GenerateSphere("lightball", Color(1, 1, 1), 18, 36, 1.f);
-	meshList[GEO_SPHERE] = MeshBuilder::GenerateSphere("sphere", Color(1, 0, 0), 18, 36, 10.f);
+	meshList[CObjectClass::GEO_AXES] = MeshBuilder::GenerateAxes("reference", 1000, 1000, 1000);
+	meshList[CObjectClass::GEO_CROSSHAIR] = MeshBuilder::GenerateCrossHair("Crosshair",Color(1,1,1),5);
+	meshList[CObjectClass::GEO_QUAD] = MeshBuilder::GenerateQuad("quad", Color(1, 1, 1), 1.f);
+	meshList[CObjectClass::GEO_QUAD]->textureID[0] = LoadTGA("Image//calibri.tga");
+	meshList[CObjectClass::GEO_TEXT] = MeshBuilder::GenerateText("text", 16, 16);
+	meshList[CObjectClass::GEO_TEXT]->textureID[0] = LoadTGA("Image//calibri.tga");
+	meshList[CObjectClass::GEO_TEXT]->material.kAmbient.Set(1, 0, 0);
+	meshList[CObjectClass::GEO_LIGHTBALL] = MeshBuilder::GenerateSphere("lightball", Color(1, 1, 1), 18, 36, 1.f);
+
+	meshList[CObjectClass::GEO_POND] = MeshBuilder::GenerateQuad("GEO_POND", Color(1, 1, 1), 1.f);
+	meshList[CObjectClass::GEO_POND]->textureID[0] = LoadTGA("Image//sea.tga");
+
+	meshList[CObjectClass::GEO_SKYPLANE] = MeshBuilder::GenerateSkyPlane("GEO_SKYPLANE", Color(1,1,1), 128, 1000.0f, 2500.0f, 1.0f, 1.0f);
+	meshList[CObjectClass::GEO_SKYPLANE]->textureID[0] = LoadTGA("Image//Sky.tga");
+
+	meshList[CObjectClass::GEO_TERRAIN] = MeshBuilder::GenerateTerrain("GEO_TERRAIN", "Image//heightmap.raw", m_heightMap);
+	meshList[CObjectClass::GEO_TERRAIN]->textureID[0] = LoadTGA("Image//Grass.tga");
+	meshList[CObjectClass::GEO_TERRAIN]->textureID[1] = LoadTGA("Image//Soil.tga");
+
+	meshList[CObjectClass::GEO_OIL_DRUM] = MeshBuilder::GenerateOBJ("OilDrum", "OBJ//oildrum.obj");
+	meshList[CObjectClass::GEO_OIL_DRUM]->textureID[0] = LoadTGA("Image//oildrum.tga");
+	meshList[CObjectClass::GEO_OIL_DRUM]->textureID[1] = LoadTGA("Image//Rust.tga");
+
+	newObjectPos.Set(-20, 2 + terrainSize.y * ReadHeightMap(m_heightMap, -20/terrainSize.x, -20/terrainSize.z), -20);
+	newObjectRot.SetToIdentity();
+	newObjectScale.Set(1,1,1);
+	newObject = new CObjectClass(newObjectPos,newObjectScale,newObjectRot,7.2f,CObjectClass::GEO_OIL_DRUM);
+
+	objectList.push_back(newObject);
+
+	meshList[CObjectClass::GEO_BULLET] = MeshBuilder::GenerateSphere("bullet", Color(1, 1, 1), 18, 36, 1.f);
+
+	meshList[CObjectClass::GEO_SPRITE_ANIMATION] = MeshBuilder::GenerateSpriteAnimation("cat",1,6);
+	meshList[CObjectClass::GEO_SPRITE_ANIMATION]->textureID[0] = LoadTGA("Image//cat.tga");
+
+	SpriteAnimation *sa = dynamic_cast<SpriteAnimation*>(meshList[CObjectClass::GEO_SPRITE_ANIMATION]);
+
+	if(sa)
+	{
+		sa->m_anim = new Animation();
+		sa->m_anim->Set(0,4,0,1.f);
+	}
+
+	meshList[CObjectClass::GEO_SHACK] = MeshBuilder::GenerateOBJ("Shack", "OBJ//Shack.obj");
+	meshList[CObjectClass::GEO_SHACK]->textureID[0] = LoadTGA("Image//Shack.tga");
+
+	//meshList[GEO_RING] = MeshBuilder::GenerateRing("ring", Color(1, 0, 1), 36, 1, 0.5f);
+	//meshList[GEO_SPHERE] = MeshBuilder::GenerateSphere("sphere", Color(1, 0, 0), 18, 36, 10.f);
 	//meshList[GEO_CUBE] = MeshBuilder::GenerateCube("cube", 1, 1, 1);
 	//meshList[GEO_TORUS] = MeshBuilder::GenerateCylinder("torus", 36, 36, 5, 1);
-	meshList[GEO_CONE] = MeshBuilder::GenerateCone("cone", Color(0.5f, 1, 0.3f), 36, 10.f, 10.f);
-	meshList[GEO_CONE]->material.kDiffuse.Set(0.99f, 0.99f, 0.99f);
-	meshList[GEO_CONE]->material.kSpecular.Set(0.f, 0.f, 0.f);
+	//meshList[GEO_CONE] = MeshBuilder::GenerateCone("cone", Color(0.5f, 1, 0.3f), 36, 10.f, 10.f);
+	//meshList[GEO_CONE]->material.kDiffuse.Set(0.99f, 0.99f, 0.99f);
+	//meshList[GEO_CONE]->material.kSpecular.Set(0.f, 0.f, 0.f);
 	
-	meshList[GEO_LEFT] = MeshBuilder::GenerateQuad("LEFT", Color(1, 1, 1), 1.f);
+	/*meshList[GEO_LEFT] = MeshBuilder::GenerateQuad("LEFT", Color(1, 1, 1), 1.f);
 	meshList[GEO_LEFT]->textureID[0] = LoadTGA("Image//left.tga");
 	meshList[GEO_RIGHT] = MeshBuilder::GenerateQuad("RIGHT", Color(1, 1, 1), 1.f);
 	meshList[GEO_RIGHT]->textureID[0] = LoadTGA("Image//right.tga");
@@ -35,17 +71,7 @@ void GenerateSkyPlane::InitObjects()
 	meshList[GEO_FRONT] = MeshBuilder::GenerateQuad("FRONT", Color(1, 1, 1), 1.f);
 	meshList[GEO_FRONT]->textureID[0] = LoadTGA("Image//front.tga");
 	meshList[GEO_BACK] = MeshBuilder::GenerateQuad("BACK", Color(1, 1, 1), 1.f);
-	meshList[GEO_BACK]->textureID[0] = LoadTGA("Image//back.tga");
-	
-	meshList[GEO_POND] = MeshBuilder::GenerateQuad("GEO_POND", Color(1, 1, 1), 1.f);
-	meshList[GEO_POND]->textureID[0] = LoadTGA("Image//sea.tga");
-
-	meshList[GEO_SKYPLANE] = MeshBuilder::GenerateSkyPlane("GEO_SKYPLANE", Color(1,1,1), 128, 200.0f, 2000.0f, 1.0f, 1.0f);
-	meshList[GEO_SKYPLANE]->textureID[0] = LoadTGA("Image//top.tga");
-
-	meshList[GEO_TERRAIN] = MeshBuilder::GenerateTerrain("GEO_TERRAIN", "Image//heightmap.raw", m_heightMap);
-	meshList[GEO_TERRAIN]->textureID[0] = LoadTGA("Image//moss1.tga");
-	meshList[GEO_TERRAIN]->textureID[1] = LoadTGA("Image//brick.tga");
+	meshList[GEO_BACK]->textureID[0] = LoadTGA("Image//back.tga");*/
 }
 
 void GenerateSkyPlane::InitLights()
