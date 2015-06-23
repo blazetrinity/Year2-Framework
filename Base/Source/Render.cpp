@@ -22,12 +22,13 @@ void GenerateSkyPlane::RenderLights()
 			Position lightPosition_cameraspace = viewStack.Top() * lights[i].position;
 			glUniform3fv(m_parameters[i * 11 + 8], 1, &lightPosition_cameraspace.x);
 		}
-	}
 
-	modelStack.PushMatrix();
-	modelStack.Translate(lights[0].position.x, lights[0].position.y, lights[0].position.z);
-	RenderMesh(meshList[CObjectClass::GEO_LIGHTBALL], false);
-	modelStack.PopMatrix();
+
+		modelStack.PushMatrix();
+		modelStack.Translate(lights[i].position.x, lights[i].position.y, lights[i].position.z);
+		RenderMesh(meshList[CObjectClass::GEO_LIGHTBALL], false);
+		modelStack.PopMatrix();
+	}
 }
 	
 void GenerateSkyPlane::RenderEnvironment()
@@ -54,21 +55,34 @@ void GenerateSkyPlane::RenderEnvironment()
 	modelStack.Scale(terrainSize.x,terrainSize.z,1);
 	RenderMesh(meshList[CObjectClass::GEO_POND], false);
 	modelStack.PopMatrix();
+}
 
+void GenerateSkyPlane::RenderAi()
+{
+	for(std::vector<CAi *>::iterator it = AiList.begin(); it != AiList.end(); ++it)
+	{
+		CAi *obj = (CAi *)*it;
+		if(obj->getState() == true)
+		{
+			modelStack.PushMatrix();
+			modelStack.Translate(obj->getTranslate().x, obj->getTranslate().y, obj->getTranslate().z);
+			modelStack.MultMatrix(obj->getRotate());
+			modelStack.Scale(obj->getScale().x,obj->getScale().y,obj->getScale().z);
+			RenderMesh(meshList[obj->getID()],false);
+			modelStack.PopMatrix();
+		}
+	}
+}
+
+void GenerateSkyPlane::RenderSprite()
+{
 	SpriteAnimation *sa = dynamic_cast<SpriteAnimation*>(meshList[CObjectClass::GEO_SPRITE_ANIMATION]);
 
 	modelStack.PushMatrix();
-	modelStack.Translate(20, 5 + terrainSize.y * ReadHeightMap(m_heightMap, 20/terrainSize.x, 20/terrainSize.z), 20);
+	modelStack.Translate(-20, 12 + terrainSize.y * ReadHeightMap(m_heightMap, -20/terrainSize.x, -20/terrainSize.z), -20);
 	modelStack.Scale(10,10,1);
 	RenderMesh(sa, false);
 	modelStack.PopMatrix();
-
-	modelStack.PushMatrix();
-	modelStack.Translate(50, 0 + terrainSize.y * ReadHeightMap(m_heightMap, 50/terrainSize.x, 50/terrainSize.z), 50);
-	modelStack.Scale(1,1,1);
-	RenderMesh(meshList[CObjectClass::GEO_SHACK], false);
-	modelStack.PopMatrix();
-
 }
 	
 void GenerateSkyPlane::RenderObjects()
@@ -85,22 +99,88 @@ void GenerateSkyPlane::RenderObjects()
 	}
 }
 
+void GenerateSkyPlane::RenderCharacter()
+{
+	modelStack.PushMatrix();
+	modelStack.Translate(m_Player.GetCamera().position.x, m_Player.GetCamera().position.y, m_Player.GetCamera().position.z);
+	modelStack.Rotate(m_Player.GetCamera().totalyaw, 0, 1, 0);
+	modelStack.Rotate(m_Player.GetCamera().totalpitch, 1 , 0, 0);
+
+	modelStack.PushMatrix();
+	modelStack.Translate(m_Player.GetCurrentWeapon()->getTranslate().x, m_Player.GetCurrentWeapon()->getTranslate().y, m_Player.GetCurrentWeapon()->getTranslate().z);
+	modelStack.Scale(m_Player.GetCurrentWeapon()->getScale().x, m_Player.GetCurrentWeapon()->getScale().y, m_Player.GetCurrentWeapon()->getScale().z);
+	RenderMesh(meshList[m_Player.GetCurrentWeapon()->getID()], false);
+	modelStack.PopMatrix();
+
+	modelStack.PopMatrix();
+}
+
 void GenerateSkyPlane::RenderHUD()
 {
+	SetHUD(true);
+
 	//On screen text
 	std::ostringstream ss;
 	ss.precision(5);
 	ss << "FPS: " << fps;
-	RenderTextOnScreen(meshList[CObjectClass::GEO_TEXT], ss.str(), Color(0, 1, 0), 3, 0, 6);
+	RenderTextOnScreen(meshList[CObjectClass::GEO_TEXT], ss.str(), Color(0, 1, 0), 3, 0, 55);
 	
+	RenderMeshIn2D(meshList[CObjectClass::GEO_HEALTH], false, 30.f, -60, -45);
+
 	std::ostringstream ss1;
-	ss1.precision(4);
-	ss1 << "Light(" << lights[0].position.x << ", " << lights[0].position.y << ", " << lights[0].position.z << ")";
-	RenderTextOnScreen(meshList[CObjectClass::GEO_TEXT], ss1.str(), Color(0, 1, 0), 3, 0, 3);
+	ss1 << m_Player.GetHealth();
+	RenderTextOnScreen(meshList[CObjectClass::GEO_TEXT], ss1.str(), Color(1, 0, 0), 3, 6, 6.5f);
 
-	RenderTextOnScreen(meshList[CObjectClass::GEO_TEXT], "Hello Screen", Color(0, 1, 0), 3, 0, 0);
+	std::ostringstream ss2;
+	ss2 << m_Player.GetCurrentWeapon()->GetcurrentBullets() << "/";
+	RenderTextOnScreen(meshList[CObjectClass::GEO_TEXT], ss2.str(), Color(0, 1, 0), 3, 32, 7.5f);
 
-	RenderMeshIn2D(meshList[CObjectClass::GEO_CROSSHAIR], false,1,1,1);
+	std::ostringstream ss3;
+	ss3 << m_Player.GetCurrentWeapon()->GetnumBulletsTotal();
+	RenderTextOnScreen(meshList[CObjectClass::GEO_TEXT], ss3.str(), Color(0, 1, 0), 3, 40, 7.5f);
+
+	RenderMeshIn2D(meshList[CObjectClass::GEO_CROSSHAIR], false, 17.5f, 0, 0);
+
+	modelStack.PushMatrix();
+	modelStack.Translate(60,-45,0);
+
+	modelStack.PushMatrix();
+	modelStack.Rotate(rotateAngle,0,0,1);
+
+	modelStack.PushMatrix();
+	modelStack.Scale(30,30,1);
+	RenderMeshIn2D(m_cMinimap->GetBackground(), false);
+	modelStack.PopMatrix();
+
+	modelStack.PopMatrix();
+
+	modelStack.PushMatrix();
+	modelStack.Scale(30,30,1);
+	RenderMeshIn2D(m_cMinimap->GetBorder(), false);
+	modelStack.PopMatrix();
+
+	modelStack.PushMatrix();
+	modelStack.Rotate(rotateAngle,0,0,1);
+
+	for(int i = 0; i < m_cMinimap->GetEnemyList().size(); ++i)
+	{
+		if(m_cMinimap->GetEnemyList()[i]->getRender())
+		{
+			modelStack.PushMatrix();
+			modelStack.Translate(m_cMinimap->GetEnemyList()[i]->getPosition_x() ,-m_cMinimap->GetEnemyList()[i]->getPosition_y(), 0);
+			modelStack.Scale(3,3,1);
+			RenderMeshIn2D(m_cMinimap->GetEnemyList()[i]->getMesh(),false);
+			modelStack.PopMatrix();
+		}
+	}
+
+	modelStack.PopMatrix();
+
+	modelStack.Scale(3,3,1);
+	RenderMeshIn2D(m_cMinimap->GetPlayer()->getMesh(), false);
+	modelStack.PopMatrix();
+
+	SetHUD(false);
 }
 
 static const float SKYBOXSIZE = 1000.f;
@@ -176,7 +256,6 @@ void GenerateSkyPlane::RenderBullet()
 		{
 			modelStack.PushMatrix();
 			modelStack.Translate(bulletList[i]->getTranslate().x,bulletList[i]->getTranslate().y,bulletList[i]->getTranslate().z);
-			//modelStack.Rotate(-90,1,0,0);
 			modelStack.Scale(bulletList[i]->getScale().x,bulletList[i]->getScale().y,bulletList[i]->getScale().z);
 			RenderMesh(meshList[bulletList[i]->getID()], false);
 			modelStack.PopMatrix();

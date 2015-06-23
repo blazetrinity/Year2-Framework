@@ -14,7 +14,7 @@ static const float CAMERA_SPEED_WALK = 200.f;
 static const float CAMERA_SPEED_RUN = 400.f;
 static const float CAMERA_SPEED_CROUCH = 100.f;
 static const float CAMERA_SPEED_PRONE = 50.f;
-static const int HEIGHT_OFFSET = 10;
+static float HEIGHT_OFFSET = 10;
 
 void Camera3::Init(const Vector3& pos, const Vector3& target, const Vector3& up)
 {
@@ -31,7 +31,9 @@ void Camera3::Init(const Vector3& pos, const Vector3& target, const Vector3& up)
 	m_bJumping = false;
 	Gravity.Set(0,-95,0);
 	JumpVel.Set(0,0,0);
-	JumpAccel.Set(0,100,0);
+	JumpAccel.Set(0,50,0);
+	totalpitch = 0;
+	totalyaw = 0;
 
 	for(int i = 0; i < 255; ++i)
 	{
@@ -63,15 +65,15 @@ void Camera3::Update(double dt,std::vector<unsigned char> &heightMap, Vector3 te
 	}
 	if(myKeys['c'] == true)
 	{
-		ChangeStance(heightMap,terrainSize);
+		ChangeStance(heightMap,terrainSize,dt);
 		myKeys['c'] = false;
 	}
-	if(myKeys['z'] == true)
+	if(myKeys['z'] == true && m_bJumping == false)
 	{
 		Run(true, heightMap,terrainSize);
 		myKeys['z'] = false;
 	}
-	if(myKeys['x'] == true)
+	if(myKeys['x'] == true && m_bJumping == false)
 	{
 		Run(false, heightMap,terrainSize);
 		myKeys['x'] = false;
@@ -83,6 +85,70 @@ void Camera3::Update(double dt,std::vector<unsigned char> &heightMap, Vector3 te
 	}
 
 	UpdateJump(dt, heightMap, terrainSize);
+
+	if(!m_bJumping)
+	{
+		if(stance == PLAYER_STANCE::STANCE_STAND || stance == PLAYER_STANCE::STANCE_RUN)
+		{
+			if(sqrt((HEIGHT_OFFSET - 10) * (HEIGHT_OFFSET - 10)) < 0.1)
+			{
+				HEIGHT_OFFSET = 10;
+			}
+			else if(HEIGHT_OFFSET > 10)
+			{
+				HEIGHT_OFFSET -= 8 * dt;
+			}
+			else if(HEIGHT_OFFSET < 10)
+			{
+				HEIGHT_OFFSET += 8 * dt;
+			}
+
+			float yDiff = target.y - position.y;
+			position.y = HEIGHT_OFFSET + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);	
+			target.y = position.y + yDiff;
+		}
+
+		else if(stance == PLAYER_STANCE::STANCE_CROUCH)
+		{
+
+			if(sqrt((HEIGHT_OFFSET - 7) * (HEIGHT_OFFSET - 7)) < 0.1)
+			{
+				HEIGHT_OFFSET = 7;
+			}
+			else if(HEIGHT_OFFSET > 7)
+			{
+				HEIGHT_OFFSET -= 8 * dt;
+			}
+			else if(HEIGHT_OFFSET < 7)
+			{
+				HEIGHT_OFFSET += 8 * dt;
+			}
+
+			float yDiff = target.y - position.y;
+			position.y = HEIGHT_OFFSET + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);	
+			target.y = position.y + yDiff;
+		}
+
+		else if(stance == PLAYER_STANCE::STANCE_PRONE)
+		{
+			if(sqrt((HEIGHT_OFFSET - 5) * (HEIGHT_OFFSET - 5)) < 0.1)
+			{
+				HEIGHT_OFFSET = 5;
+			}
+			else if(HEIGHT_OFFSET > 5)
+			{
+				HEIGHT_OFFSET -= 8 * dt;
+			}
+			else if(HEIGHT_OFFSET < 5)
+			{
+				HEIGHT_OFFSET += 8 * dt;
+			}
+
+			float yDiff = target.y - position.y;
+			position.y = HEIGHT_OFFSET + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);	
+			target.y = position.y + yDiff;
+		}
+	}
 
 	if(Application::IsKeyPressed(VK_LEFT))
 	{
@@ -148,10 +214,10 @@ void Camera3::Update(double dt,std::vector<unsigned char> &heightMap, Vector3 te
 		Pitch(dt, heightMap, terrainSize);
 	}
 
-	if(Application::IsKeyPressed('R'))
+	/*if(Application::IsKeyPressed('R'))
 	{
 		Reset();
-	}
+	}*/
 }
 
 void Camera3::UpdateStatus(const unsigned char key)
@@ -164,8 +230,30 @@ void Camera3::MoveForward(const double dt, std::vector<unsigned char> &heightMap
 	Vector3 tempTarget = target;
 	tempTarget.y = position.y;
 	Vector3 view = (tempTarget - position).Normalized();
-	position += view * CAMERA_SPEED_WALK * (float)dt;
-	target += view * CAMERA_SPEED_WALK * (float)dt;
+	if(stance == PLAYER_STANCE::STANCE_STAND)
+	{
+		position += view * CAMERA_SPEED_WALK * (float)dt;
+		target += view * CAMERA_SPEED_WALK * (float)dt;
+	}
+	
+	else if(stance == PLAYER_STANCE::STANCE_RUN)
+	{
+		position += view * CAMERA_SPEED_RUN * (float)dt;
+		target += view * CAMERA_SPEED_RUN * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_CROUCH)
+	{
+		position += view * CAMERA_SPEED_CROUCH * (float)dt;
+		target += view * CAMERA_SPEED_CROUCH * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_PRONE)
+	{
+		position += view * CAMERA_SPEED_PRONE * (float)dt;
+		target += view * CAMERA_SPEED_PRONE * (float)dt;
+	}
+
 	float yDiff = target.y - position.y;
 	if(!m_bJumping)
 	{
@@ -179,8 +267,31 @@ void Camera3::MoveBackward(const double dt, std::vector<unsigned char> &heightMa
 	Vector3 tempTarget = target;
 	tempTarget.y = position.y;
 	Vector3 view = (tempTarget - position).Normalized();
-	position -= view * CAMERA_SPEED_WALK * (float)dt;
-	target -= view * CAMERA_SPEED_WALK * (float)dt;
+	
+	if(stance == PLAYER_STANCE::STANCE_STAND)
+	{
+		position -= view * CAMERA_SPEED_WALK * (float)dt;
+		target -= view * CAMERA_SPEED_WALK * (float)dt;
+	}
+	
+	else if(stance == PLAYER_STANCE::STANCE_RUN)
+	{
+		position -= view * CAMERA_SPEED_RUN * (float)dt;
+		target -= view * CAMERA_SPEED_RUN * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_CROUCH)
+	{
+		position -= view * CAMERA_SPEED_CROUCH * (float)dt;
+		target -= view * CAMERA_SPEED_CROUCH * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_PRONE)
+	{
+		position -= view * CAMERA_SPEED_PRONE * (float)dt;
+		target -= view * CAMERA_SPEED_PRONE * (float)dt;
+	}
+
 	float yDiff = target.y - position.y;
 	if(!m_bJumping)
 	{
@@ -195,8 +306,31 @@ void Camera3::MoveLeft(const double dt, std::vector<unsigned char> &heightMap, V
 	Vector3 right = view.Cross(up);
 	right.y = 0;
 	right.Normalize();
-	position -= right * CAMERA_SPEED_WALK * (float)dt;
-	target -= right * CAMERA_SPEED_WALK * (float)dt;
+	
+	if(stance == PLAYER_STANCE::STANCE_STAND)
+	{
+		position -= right * CAMERA_SPEED_WALK * (float)dt;
+		target -= right * CAMERA_SPEED_WALK * (float)dt;
+	}
+	
+	else if(stance == PLAYER_STANCE::STANCE_RUN)
+	{
+		position -= right * CAMERA_SPEED_RUN * (float)dt;
+		target -= right * CAMERA_SPEED_RUN * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_CROUCH)
+	{
+		position -= right * CAMERA_SPEED_CROUCH * (float)dt;
+		target -= right * CAMERA_SPEED_CROUCH * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_PRONE)
+	{
+		position -= right * CAMERA_SPEED_PRONE * (float)dt;
+		target -= right * CAMERA_SPEED_PRONE * (float)dt;
+	}
+
 	float yDiff = target.y - position.y;
 	if(!m_bJumping)
 	{
@@ -211,8 +345,31 @@ void Camera3::MoveRight(const double dt, std::vector<unsigned char> &heightMap, 
 	Vector3 right = view.Cross(up);
 	right.y = 0;
 	right.Normalize();
-	position += right * CAMERA_SPEED_WALK * (float)dt;
-	target += right * CAMERA_SPEED_WALK * (float)dt;
+
+	if(stance == PLAYER_STANCE::STANCE_STAND)
+	{
+		position += right * CAMERA_SPEED_WALK * (float)dt;
+		target += right * CAMERA_SPEED_WALK * (float)dt;
+	}
+	
+	else if(stance == PLAYER_STANCE::STANCE_RUN)
+	{
+		position += right * CAMERA_SPEED_RUN * (float)dt;
+		target += right * CAMERA_SPEED_RUN * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_CROUCH)
+	{
+		position += right * CAMERA_SPEED_CROUCH * (float)dt;
+		target += right * CAMERA_SPEED_CROUCH * (float)dt;
+	}
+
+	else if(stance == PLAYER_STANCE::STANCE_PRONE)
+	{
+		position += right * CAMERA_SPEED_PRONE * (float)dt;
+		target += right * CAMERA_SPEED_PRONE * (float)dt;
+	}
+
 	float yDiff = target.y - position.y;
 	if(!m_bJumping)
 	{
@@ -225,7 +382,7 @@ void Camera3::TurnLeft(const double dt,std::vector<unsigned char> &heightMap, Ve
 {
 	Vector3 view = (target - position).Normalized();
 	float yaw = (float)(-CAMERA_SPEED_WALK * Application::camera_yaw * (float)dt);
-	Mtx44 rotation;
+	totalyaw += yaw;
 	rotation.SetToRotation(yaw,0,1,0);
 	view = rotation * view;
 	target = position + view;
@@ -239,7 +396,7 @@ void Camera3::TurnRight(const double dt,std::vector<unsigned char> &heightMap, V
 {
 	Vector3 view = (target - position).Normalized();
 	float yaw = (float)(-CAMERA_SPEED_WALK * Application::camera_yaw * (float)dt);
-	Mtx44 rotation;
+	totalyaw += yaw;
 	rotation.SetToRotation(yaw,0,1,0);
 	view = rotation * view;
 	target = position + view;
@@ -252,6 +409,7 @@ void Camera3::TurnRight(const double dt,std::vector<unsigned char> &heightMap, V
 void Camera3::LookUp(const double dt,std::vector<unsigned char> &heightMap, Vector3 terrainSize)
 {
 	float pitch = (float)(-CAMERA_SPEED_WALK * Application::camera_pitch * (float)dt);
+	totalpitch += pitch;
 	Vector3 view = (target - position).Normalized();
 	Vector3 right = view.Cross(up);
 	right.y = 0;
@@ -266,6 +424,7 @@ void Camera3::LookUp(const double dt,std::vector<unsigned char> &heightMap, Vect
 void Camera3::LookDown(const double dt,std::vector<unsigned char> &heightMap, Vector3 terrainSize)
 {
 	float pitch = (float)(-CAMERA_SPEED_WALK * Application::camera_pitch * (float)dt);
+	totalpitch += pitch;
 	Vector3 view = (target - position).Normalized();
 	Vector3 right = view.Cross(up);
 	right.y = 0;
@@ -402,15 +561,15 @@ void Camera3::Run(bool run, std::vector<unsigned char> &heightMap, Vector3 terra
 	}
 }
 
-void Camera3::ChangeStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize)
+void Camera3::ChangeStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize, double dt)
 {
 	if(m_bJumping == false && stance != PLAYER_STANCE::STANCE_RUN)
 	{
-		UpdateStance(heightMap, terrainSize);
+		UpdateStance(heightMap, terrainSize, dt);
 	}
 }
 
-void Camera3::UpdateStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize)
+void Camera3::UpdateStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize, double dt)
 {
 	if(stance == PLAYER_STANCE::STANCE_STAND)
 	{
@@ -419,7 +578,21 @@ void Camera3::UpdateStance(std::vector<unsigned char> &heightMap, Vector3 terrai
 		Vector3 right = view.Cross(up);
 		right.y = 0;
 		right.Normalize();
-		position.y = 7 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+		
+		if(sqrt((HEIGHT_OFFSET - 7) * (HEIGHT_OFFSET - 7)) < 0.1)
+		{
+			HEIGHT_OFFSET = 7;
+		}
+		else if(HEIGHT_OFFSET > 7)
+		{
+			HEIGHT_OFFSET -= 8 * dt;
+		}
+		else if(HEIGHT_OFFSET < 7)
+		{
+			HEIGHT_OFFSET += 8 * dt;
+		}
+
+		position.y = HEIGHT_OFFSET + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
 		up = right.Cross(view).Normalized();
 		target = position + view;
 	}
@@ -431,7 +604,21 @@ void Camera3::UpdateStance(std::vector<unsigned char> &heightMap, Vector3 terrai
 		Vector3 right = view.Cross(up);
 		right.y = 0;
 		right.Normalize();
-		position.y = 5 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+
+		if(sqrt((HEIGHT_OFFSET - 5) * (HEIGHT_OFFSET - 5)) < 0.1)
+		{
+			HEIGHT_OFFSET = 5;
+		}
+		else if(HEIGHT_OFFSET > 5)
+		{
+			HEIGHT_OFFSET -= 8 * dt;
+		}
+		else if(HEIGHT_OFFSET < 5)
+		{
+			HEIGHT_OFFSET += 8 * dt;
+		}
+
+		position.y = HEIGHT_OFFSET + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
 		up = right.Cross(view).Normalized();
 		target = position + view;
 	}
@@ -443,7 +630,21 @@ void Camera3::UpdateStance(std::vector<unsigned char> &heightMap, Vector3 terrai
 		Vector3 right = view.Cross(up);
 		right.y = 0;
 		right.Normalize();
-		position.y = 10 + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
+
+		if(sqrt((HEIGHT_OFFSET - 10) * (HEIGHT_OFFSET - 10)) < 0.1)
+		{
+			HEIGHT_OFFSET = 10;
+		}
+		else if(HEIGHT_OFFSET > 10)
+		{
+			HEIGHT_OFFSET -= 8 * dt;
+		}
+		else if(HEIGHT_OFFSET < 10)
+		{
+			HEIGHT_OFFSET += 8 * dt;
+		}
+
+		position.y =  HEIGHT_OFFSET + terrainSize.y * ReadHeightMap(heightMap, position.x/terrainSize.x, position.z/terrainSize.z);
 		up = right.Cross(view).Normalized();
 		target = position + view;
 	}

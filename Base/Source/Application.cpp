@@ -9,7 +9,17 @@
 
 //Include the standard C++ headers
 #include <stdio.h>
+
+#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
+#include <crtdbg.h>
+
+#ifdef _DEBUG
+#ifndef DBG_NEW
+#define DBG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DBG_NEW
+#endif
+#endif
 
 GLFWwindow* m_window;
 const unsigned char FPS = 60; // FPS of this game
@@ -153,6 +163,11 @@ bool Application::GetKeyboardUpdate()
 {
 	static bool bCButtonState = false;
 	static bool bShiftButtonState = false;
+	static bool bRButtonState = false;
+	static bool b1ButtonState = false;
+	static bool b2ButtonState = false;
+	static bool bPButtonState = false;
+
 	if(IsKeyPressed('A'))
 	{
 		scene->UpdateCameraStatus('a');
@@ -191,6 +206,43 @@ bool Application::GetKeyboardUpdate()
 	{
 		scene->UpdateCameraStatus('x');
 		bShiftButtonState = false;
+	}
+	if(IsKeyPressed('R') && !bRButtonState)
+	{
+		scene->UpdateWeaponStatus(GenerateSkyPlane::WA_RELOAD);
+		bRButtonState = true;
+	}
+	if(!IsKeyPressed('R') && bRButtonState)
+	{
+		bRButtonState = false;
+	}
+	if(IsKeyPressed('1') && !b1ButtonState)
+	{
+		scene->UpdateWeaponStatus(GenerateSkyPlane::WA_CHANGEWEAPON_1);
+		b1ButtonState = true;
+	}
+	if(!IsKeyPressed('1') && b1ButtonState)
+	{
+		b1ButtonState = false;
+	}
+	if(IsKeyPressed('2') && !b2ButtonState)
+	{
+		scene->UpdateWeaponStatus(GenerateSkyPlane::WA_CHANGEWEAPON_2);
+		b2ButtonState = true;
+	}
+	if(!IsKeyPressed('2') && b2ButtonState)
+	{
+		b2ButtonState = false;
+	}
+
+	if(IsKeyPressed('P') && !bPButtonState)
+	{
+		scene->StartGame();
+		bPButtonState = true;
+	}
+	if(!IsKeyPressed('P') && bPButtonState)
+	{
+		bPButtonState = false;
 	}
 	return true;
 }
@@ -238,4 +290,6 @@ void Application::Exit()
 	glfwDestroyWindow(m_window);
 	//Finalize and clean up GLFW
 	glfwTerminate();
+
+	std::cout << _CrtDumpMemoryLeaks();
 }

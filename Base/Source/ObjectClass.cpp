@@ -7,7 +7,7 @@ CObjectClass::CObjectClass()
 	Scale.SetZero();
 }
 
-CObjectClass::CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, float size, int ID)
+CObjectClass::CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, Vector3 size, int ID)
 {
 	this->setTranslate(Translate);
 	this->setScale(Scale);
@@ -16,12 +16,20 @@ CObjectClass::CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, float
 	this->setBound(size);
 }
 
+CObjectClass::CObjectClass(CObjectClass &copy)
+{
+	this->setTranslate(copy.getTranslate());
+	this->setScale(copy.getScale());
+	this->setRotate(copy.getRotate());
+	this->setID(copy.getID());
+}
+
 CObjectClass::~CObjectClass()
 {
 
 }
 
-void CObjectClass::Init(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, float size, int ID)
+void CObjectClass::Init(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, Vector3 size, int ID)
 {
 	this->setTranslate(Translate);
 	this->setScale(Scale);
@@ -75,9 +83,12 @@ void CObjectClass::setScale(Vector3 S)
 	Scale = S;
 }
 
-void CObjectClass::setBound(int size)
+void CObjectClass::setBound(Vector3 size)
 {
-	//BoundCheck.setBound(Min,Max);
+	Vector3 Min, Max;
+	Min.Set((Translate.x - (size.x * Scale.x)/2),(Translate.y - (size.y * Scale.y)),(Translate.z - (size.z * Scale.z)/2));
+	Max.Set((Translate.x + (size.x * Scale.x)/2),(Translate.y + (size.y * Scale.y)),(Translate.z + (size.z * Scale.z)/2));
+	BoundCheck.setBound(Min,Max);
 }
 
 void CObjectClass::setID(int ID)

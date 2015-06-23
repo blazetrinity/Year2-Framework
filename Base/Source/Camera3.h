@@ -39,6 +39,8 @@ public:
 	Vector3 defaultTarget;
 	Vector3 defaultUp;
 
+	float totalpitch, totalyaw;
+
 	CAM_TYPE sCameraType;
 
 	bool myKeys[255];
@@ -77,8 +79,8 @@ public:
 	virtual void UpdateJump(const double dt,std::vector<unsigned char> &heightMap, Vector3 terrainSize);
 	virtual void Run(bool run, std::vector<unsigned char> &heightMap, Vector3 terrainSize);
 	
-	virtual void ChangeStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize);
-	virtual void UpdateStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize);
+	virtual void ChangeStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize, double dt);
+	virtual void UpdateStance(std::vector<unsigned char> &heightMap, Vector3 terrainSize, double dt);
 };
 
 #endif

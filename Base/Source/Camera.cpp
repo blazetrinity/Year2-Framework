@@ -1,6 +1,5 @@
 #include "Camera.h"
 #include "Application.h"
-#include "Mtx44.h"
 
 Camera::Camera()
 {
@@ -23,6 +22,7 @@ void Camera::Reset()
 	position.Set(1, 0, 0);
 	target.Set(0, 0, 0);
 	up.Set(0, 1, 0);
+	rotation.SetToRotation(0,0,1,0);
 }
 
 void Camera::Update(double dt)

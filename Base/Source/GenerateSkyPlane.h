@@ -15,8 +15,17 @@
 #include "LoadTGA.h"
 #include "LoadHmap.h"
 #include "BulletInfo.h"
+#include "Minimap.h"
+#include "Character.h"
+#include "Weapon.h"
+#include "Ai.h"
+#include "Particle.h"
+#include <irrKlang.h>
+using namespace irrklang;
 #include <sstream>
 #include <vector>
+
+#pragma comment(lib, "irrKlang.lib")
 
 using std::vector;
 
@@ -33,21 +42,32 @@ public:
 	virtual void UpdateWeaponStatus(const unsigned char key);
 	virtual void Exit();
 
+	virtual void StartGame();
+
 	void InitObjects();
-	void InitLights();
+	void InitParams();
+	void InitSounds();
+
+	void SetHUD(const bool m_bHUDmode);
+
+	void GameUpdate(double dt);
 
 	void RenderText(Mesh* mesh, std::string text, Color color);
-	void RenderTextOnScreen(Mesh* mesh, std::string text, Color color, float size, float x, float y);
-	void RenderMeshIn2D(Mesh* mesh, bool enableLight, float size = 1.0f, float x = 0.0f, float y = 0.0f);
+	void RenderTextOnScreen(Mesh* mesh, std::string text, Color color, float size, float x, float y);	
+	void RenderMeshIn2D(Mesh* mesh, bool enableLight);
+	void RenderMeshIn2D(Mesh* mesh, bool enableLight, float size, float x = 0.0f, float y = 0.0f, bool rotate = false);
 	void RenderMesh(Mesh *mesh, bool enableLight);
 	void RenderSkybox();
 	void RenderSkyPlane();
 	void RenderTerrain();
 	void RenderLights();
 	void RenderEnvironment();
+	void RenderSprite();
+	void RenderAi();
 	void RenderHUD();
 	void RenderBullet();
 	void RenderObjects();
+	void RenderCharacter();
 
 	enum UNIFORM_TYPE
 	{
@@ -86,13 +106,20 @@ public:
 		U_LIGHTENABLED,
 		U_NUMLIGHTS,
 
-		
 		U_COLOR_TEXTURE0,
 		U_COLOR_TEXTURE_ENABLED0,
 		U_COLOR_TEXTURE1,
 		U_COLOR_TEXTURE_ENABLED1,
 		U_TEXT_ENABLED,
 		U_TEXT_COLOR,
+
+		U_FOG_COLOR,
+		U_FOG_START,
+		U_FOG_END,
+		U_FOG_DENSITY,
+		U_FOG_TYPE,
+		U_FOG_ENABLE,
+
 		U_TOTAL,
 	};
 
@@ -101,8 +128,18 @@ public:
 		WA_NIL = 0,
 		WA_FIRE,
 		WA_RELOAD,
-		WA_CHANGEWEAPON,
+		WA_CHANGEWEAPON_1,
+		WA_CHANGEWEAPON_2,
 		WA_TOTAL,
+	};
+
+	enum SOUNDS
+	{
+		SND_WALKING = 0,
+		SND_GUNFIRE_AK,
+		SND_GUNFIRE_DEAGLE,
+		SND_RELOAD,
+		TOTAL_SND,
 	};
 
 private:
@@ -110,8 +147,6 @@ private:
 	Mesh* meshList[CObjectClass::NUM_GEOMETRY];
 	unsigned m_programID;
 	unsigned m_parameters[U_TOTAL];
-
-	Camera3 camera;
 
 	float rotateAngle;
 
@@ -128,14 +163,38 @@ private:
 	int numLights;
 
 	bool bLightEnabled;
+	bool m_bReload;
+	bool m_bFire;
+	bool m_bRecoil;
+	bool m_startgame;
+	bool m_currentgame;
+	bool m_endgame;
 
 	float fps;
 
+	float m_fLastshot;
+	float m_fOldpitch;
+	float m_fNewpitch;
+
+	int m_AiCount;
+
 	vector<CBulletInfo*> bulletList;
 	vector<CObjectClass*> objectList;
+	vector<CAi*> AiList;
+	vector<CParticle*> ParticleList;
 	CObjectClass* newObject;
-	Vector3 newObjectPos, newObjectScale;
+	Vector3 newObjectPos, newObjectScale, newObjectSize;
 	Mtx44 newObjectRot;
+
+	CMinimap* m_cMinimap;
+
+	CCharacter m_Player;
+
+	//The sound engine
+	ISoundEngine* theSoundEngine;
+	ISound* gunSound;
+	ISound* walkSound;
+	ISoundSource* SND[TOTAL_SND];
 };
 
 #endif

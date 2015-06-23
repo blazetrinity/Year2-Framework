@@ -9,7 +9,7 @@ public:
 	CBulletInfo(void);
 	virtual ~CBulletInfo(void);
 
-	void Init(const Vector3 position, const Vector3 direction, const Vector3 scale, const Mtx44 rotation,const int size, const int ID, const float speed, const float lifetime);
+	void Init(const Vector3 position, const Vector3 direction, const Vector3 scale, const Mtx44 rotation,const Vector3 size, const int ID, const float speed, const float lifetime);
 	
 	void SetStatus(const bool bStatus);
 	bool GetStatus();

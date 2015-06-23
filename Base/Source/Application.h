@@ -22,14 +22,14 @@ public:
 	static double camera_yaw, camera_pitch;
 	bool GetMouseUpdate();
 	bool GetKeyboardUpdate();
+	const static int m_window_width = 800;
+	const static int m_window_height = 600;
 
 private:
 	Application();
 	~Application();
 
 	const static int m_window_deadzone = 100;
-	const static int m_window_width = 800;
-	const static int m_window_height = 600;
 
 	//Declare a window object
 	StopWatch m_timer;

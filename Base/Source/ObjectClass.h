@@ -14,6 +14,7 @@ Class to define a Scene Object
 #include "Vector3.h"
 #include "Mtx44.h"
 #include "Bound.h"
+#include "LoadHmap.h"
 
 /******************************************************************************/
 /*!
@@ -32,7 +33,8 @@ private:
 
 public:
 	CObjectClass();
-	CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, float size, int ID); 
+	CObjectClass(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, Vector3 size, int ID); 
+	CObjectClass(CObjectClass &copy);
 	~CObjectClass();
 
 	enum GEOMETRY_TYPE
@@ -47,8 +49,16 @@ public:
 		GEO_POND,
 		GEO_BULLET,
 		GEO_OIL_DRUM,
-		GEO_SPRITE_ANIMATION,
 		GEO_SHACK,
+		GEO_BUILDING,
+		GEO_SPRITE_ANIMATION,
+		GEO_BOBA_TARGET,
+		GEO_VADER_TARGET,
+		GEO_AK,
+		GEO_DEAGLE,
+		GEO_HEALTH,
+		GEO_ENEMY,
+		GEO_RAIN,
 		/*GEO_SPHERE,
 		GEO_CUBE,
 		GEO_RING,
@@ -62,7 +72,7 @@ public:
 		NUM_GEOMETRY,
 	};
 
-	void Init(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, float size, int ID);
+	virtual void Init(Vector3 Translate, Vector3 Scale, Mtx44 Rotate, Vector3 size, int ID);
 
 	Mtx44 getRotate(void);
 	
@@ -76,9 +86,8 @@ public:
 	void setRotate(Mtx44 R);
 	void setTranslate(Vector3 T);
 	void setScale(Vector3 S);
-	void setBound(int size);
+	void setBound(Vector3 size);
 	void setID(int ID);
-	
 };
 
 #endif

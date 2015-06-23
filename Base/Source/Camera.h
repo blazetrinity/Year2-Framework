@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "Vector3.h"
+#include "Mtx44.h"
 #include <vector>
 
 class Camera
@@ -10,6 +11,7 @@ public:
 	Vector3 position;
 	Vector3 target;
 	Vector3 up;
+	Mtx44 rotation;
 
 	Camera();
 	~Camera();
